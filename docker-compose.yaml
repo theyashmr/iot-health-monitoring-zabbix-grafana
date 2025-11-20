@@ -1,0 +1,43 @@
+version: '3.5'
+
+services:
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: zabbix
+      MYSQL_USER: zabbix
+      MYSQL_PASSWORD: zabbixpass
+      MYSQL_ROOT_PASSWORD: rootpass
+    volumes:
+      - mysql-data:/var/lib/mysql
+    restart: always
+
+  zabbix-server:
+    image: zabbix/zabbix-server-mysql:alpine-6.4-latest
+    environment:
+      DB_SERVER_HOST: mysql
+      MYSQL_DATABASE: zabbix
+      MYSQL_USER: zabbix
+      MYSQL_PASSWORD: zabbixpass
+    ports:
+      - "10051:10051"
+    depends_on:
+      - mysql
+    restart: always
+
+  zabbix-web:
+    image: zabbix/zabbix-web-nginx-mysql:alpine-6.4-latest
+    environment:
+      DB_SERVER_HOST: mysql
+      MYSQL_DATABASE: zabbix
+      MYSQL_USER: zabbix
+      MYSQL_PASSWORD: zabbixpass
+      PHP_TZ: Asia/Kolkata
+    ports:
+      - "8080:8080"
+    depends_on:
+      - zabbix-server
+    restart: always
+
+volumes:
+  mysql-data:
